@@ -1,0 +1,3 @@
+html:not([data-cien-banner-blocker-net="false"]) .banner-swiper {
+  display: none !important;
+}

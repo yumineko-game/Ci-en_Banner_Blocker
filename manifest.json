@@ -13,13 +13,27 @@
   "content_scripts": [
     {
       "matches": [
-        "https://ci-en.net/mypage*",
-        "https://ci-en.dlsite.com/mypage*"
+        "https://ci-en.net/mypage*"
+      ],
+      "css": [
+        "content-net.css"
       ],
       "js": [
         "content.js"
       ],
-      "run_at": "document_idle"
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://ci-en.dlsite.com/mypage*"
+      ],
+      "css": [
+        "content-r18.css"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
     }
   ]
 }

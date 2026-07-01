@@ -3,38 +3,19 @@
     {
       key: 'hideCiEnNetBanner',
       legacyKey: 'hideBanner',
+      attribute: 'data-cien-banner-blocker-net',
       hosts: ['ci-en.net'],
       selector: '.banner-swiper',
     },
     {
       key: 'hideCiEnR18Banner',
+      attribute: 'data-cien-banner-blocker-r18',
       hosts: ['ci-en.dlsite.com'],
       selector: '#supporting > div.e-box.is-invisible > div.banner-swiper',
     },
   ];
 
   const activeTargets = targets.filter((target) => target.hosts.includes(location.hostname));
-  const styleElements = new Map();
-
-  const ensureHead = () => document.head || document.documentElement;
-
-  const getStyle = (target) => {
-    if (!styleElements.has(target.key)) {
-      const style = document.createElement('style');
-      style.dataset.cienBannerBlocker = target.key;
-      style.textContent = `${target.selector} { display: none !important; }`;
-      styleElements.set(target.key, style);
-    }
-    return styleElements.get(target.key);
-  };
-
-  const applyStyle = (target) => {
-    const style = getStyle(target);
-    if (style.parentNode) return;
-    const parent = ensureHead();
-    if (!parent) return;
-    parent.appendChild(style);
-  };
 
   const refreshSwiper = (target) => {
     const run = () => {
@@ -56,24 +37,19 @@
     });
   };
 
-  const removeStyle = (target) => {
-    const style = getStyle(target);
-    if (style.parentNode) {
-      style.parentNode.removeChild(style);
+  const setState = (target, shouldHide) => {
+    const wasVisible = document.documentElement.getAttribute(target.attribute) === 'false';
+
+    if (shouldHide) {
+      document.documentElement.removeAttribute(target.attribute);
+    } else {
+      document.documentElement.setAttribute(target.attribute, 'false');
+    }
+
+    if (wasVisible !== !shouldHide) {
       refreshSwiper(target);
     }
   };
-
-  const setState = (target, shouldHide) => {
-    if (shouldHide) {
-      applyStyle(target);
-    } else {
-      removeStyle(target);
-    }
-  };
-
-  // Apply immediately to avoid flicker until storage state loads.
-  activeTargets.forEach(applyStyle);
 
   const storageKeys = targets.flatMap((target) => [target.key, target.legacyKey]).filter(Boolean);
 
