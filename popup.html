@@ -2,13 +2,19 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>Ci-en バナー設定</title>
+    <title>Ci-en Banner Blocker</title>
     <style>
       body {
         font-family: sans-serif;
         margin: 12px;
-        min-width: 200px;
+        min-width: 260px;
       }
+
+      .options {
+        display: grid;
+        gap: 10px;
+      }
+
       label {
         display: flex;
         align-items: center;
@@ -18,10 +24,16 @@
     </style>
   </head>
   <body>
-    <label>
-      <input type="checkbox" id="banner-toggle" />
-      バナーを非表示にする
-    </label>
+    <div class="options">
+      <label>
+        <input type="checkbox" id="net-banner-toggle" />
+        ci-en.net のバナーを非表示にする
+      </label>
+      <label>
+        <input type="checkbox" id="r18-banner-toggle" />
+        ci-en.dlsite.com (R18) のバナーを非表示にする
+      </label>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>
