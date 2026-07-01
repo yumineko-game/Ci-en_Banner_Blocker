@@ -1,50 +1,86 @@
 (() => {
-  const style = document.createElement('style');
-  style.textContent = `.banner-swiper { display: none !important; }`;
+  const targets = [
+    {
+      key: 'hideCiEnNetBanner',
+      legacyKey: 'hideBanner',
+      attribute: 'data-cien-banner-blocker-net',
+      hosts: ['ci-en.net'],
+      selector: '.banner-swiper',
+    },
+    {
+      key: 'hideCiEnR18Banner',
+      attribute: 'data-cien-banner-blocker-r18',
+      hosts: ['ci-en.dlsite.com'],
+      selector: '#supporting > div.e-box.is-invisible > div.banner-swiper',
+    },
+  ];
 
-  let isApplied = false;
+  const activeTargets = targets.filter((target) => target.hosts.includes(location.hostname));
 
-  const ensureHead = () => document.head || document.documentElement;
+  const refreshSwiper = (target) => {
+    const run = () => {
+      document.querySelectorAll(target.selector).forEach((banner) => {
+        const candidates = [banner, ...banner.querySelectorAll('.swiper, .swiper-container')];
+        candidates.forEach((element) => {
+          if (element.swiper && typeof element.swiper.update === 'function') {
+            element.swiper.update();
+          }
+        });
+      });
+      window.dispatchEvent(new Event('resize'));
+    };
 
-  const applyStyle = () => {
-    if (isApplied) return;
-    const parent = ensureHead();
-    if (!parent) return;
-    parent.appendChild(style);
-    isApplied = true;
+    requestAnimationFrame(() => {
+      run();
+      setTimeout(run, 100);
+      setTimeout(run, 500);
+    });
   };
 
-  const removeStyle = () => {
-    if (!isApplied) return;
-    if (style.parentNode) {
-      style.parentNode.removeChild(style);
-    }
-    isApplied = false;
-  };
+  const setState = (target, shouldHide) => {
+    const wasVisible = document.documentElement.getAttribute(target.attribute) === 'false';
 
-  const setState = (shouldHide) => {
     if (shouldHide) {
-      applyStyle();
+      document.documentElement.removeAttribute(target.attribute);
     } else {
-      removeStyle();
+      document.documentElement.setAttribute(target.attribute, 'false');
+    }
+
+    if (wasVisible !== !shouldHide) {
+      refreshSwiper(target);
     }
   };
 
-  // Apply immediately to avoid flicker until storage state loads.
-  applyStyle();
+  const storageKeys = targets.flatMap((target) => [target.key, target.legacyKey]).filter(Boolean);
 
-  chrome.storage.local.get('hideBanner', (result) => {
-    const storedValue = result.hideBanner;
-    if (storedValue === undefined) {
-      chrome.storage.local.set({ hideBanner: true });
-      setState(true);
-      return;
+  chrome.storage.local.get(storageKeys, (result) => {
+    const defaults = {};
+
+    activeTargets.forEach((target) => {
+      const storedValue = result[target.key];
+      const legacyValue = target.legacyKey ? result[target.legacyKey] : undefined;
+      const hide = storedValue === undefined
+        ? (legacyValue === undefined ? true : Boolean(legacyValue))
+        : Boolean(storedValue);
+
+      if (storedValue === undefined) {
+        defaults[target.key] = hide;
+      }
+      setState(target, hide);
+    });
+
+    if (Object.keys(defaults).length > 0) {
+      chrome.storage.local.set(defaults);
     }
-    setState(Boolean(storedValue));
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== 'local' || !changes.hideBanner) return;
-    setState(Boolean(changes.hideBanner.newValue));
+    if (areaName !== 'local') return;
+
+    activeTargets.forEach((target) => {
+      if (changes[target.key]) {
+        setState(target, Boolean(changes[target.key].newValue));
+      }
+    });
   });
 })();

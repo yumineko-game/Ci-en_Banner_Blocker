@@ -1,0 +1,3 @@
+html:not([data-cien-banner-blocker-r18="false"]) #supporting > div.e-box.is-invisible > div.banner-swiper {
+  display: none !important;
+}

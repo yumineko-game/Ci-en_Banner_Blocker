@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Hide Ci-en Banner Swiper",
-  "version": "1.1",
-  "description": "Hides the banner-swiper sections on ci-en.net profile pages with an on/off toggle.",
+  "name": "Ci-en Banner Blocker",
+  "version": "1.2",
+  "description": "Hides the banner-swiper sections on Ci-en mypage with separate toggles.",
   "permissions": [
     "storage"
   ],
   "action": {
-    "default_title": "Ci-en Banner Toggle",
+    "default_title": "Ci-en Banner Blocker",
     "default_popup": "popup.html"
   },
   "content_scripts": [
@@ -15,10 +15,25 @@
       "matches": [
         "https://ci-en.net/mypage*"
       ],
+      "css": [
+        "content-net.css"
+      ],
       "js": [
         "content.js"
       ],
-      "run_at": "document_idle"
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://ci-en.dlsite.com/mypage*"
+      ],
+      "css": [
+        "content-r18.css"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
     }
   ]
 }
